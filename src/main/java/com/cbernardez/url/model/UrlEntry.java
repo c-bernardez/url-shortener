@@ -8,7 +8,7 @@ public class UrlEntry {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "counter_generator")
     @SequenceGenerator(name = "counter_generator", sequenceName = "counter_generator_name", allocationSize = 10)
-    private long id;
+    private Long id;
     @Column(unique = true)
     private String shortUrl;
     private String longUrl;
