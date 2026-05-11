@@ -4,6 +4,8 @@ import com.cbernardez.url.model.UrlEntry;
 import com.cbernardez.url.repository.UrlRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UrlService {
     private final UrlRepository urlRepository;
@@ -18,8 +20,8 @@ public class UrlService {
         StringBuilder result = new StringBuilder();
         while (true){
             long quotient = (long) n / 62;
-            n = quotient;
             long remainder = (long) n % 62;
+            n = quotient;
             int index = (int) remainder;
             char character = ALPHABET.charAt(index);
             result.append(character);
@@ -27,11 +29,15 @@ public class UrlService {
                 break;
             }
         }
-        return result.toString();
+        return result.reverse().toString();
     }
 
     public String shortenUrl(String longUrl) {
-        //create the alias
+        //create the alias, if it doesn't exist yet
+        Optional<UrlEntry> existing = this.urlRepository.findByLongUrl(longUrl);
+        if (existing.isPresent()){
+            return existing.get().getShortUrl();
+        }
         UrlEntry entry = new UrlEntry();
         entry.setLongUrl(longUrl);
         UrlEntry saved = this.urlRepository.save(entry);
