@@ -1,6 +1,5 @@
 package com.cbernardez.url.controller;
 
-import com.cbernardez.url.model.UrlEntry;
 import com.cbernardez.url.service.UrlService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
