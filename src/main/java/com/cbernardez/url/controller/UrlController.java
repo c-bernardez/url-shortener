@@ -1,6 +1,8 @@
 package com.cbernardez.url.controller;
 
+import com.cbernardez.url.dto.ShortenRequest;
 import com.cbernardez.url.service.UrlService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +18,8 @@ public class UrlController {
     }
 
     @PostMapping("/shorten")
-    public String getAlias(@RequestBody String url) {
-        return urlService.shortenUrl(url);
+    public String getAlias(@RequestBody @Valid ShortenRequest request) {
+        return urlService.shortenUrl(request);
     }
 
     @GetMapping("/{alias}")
