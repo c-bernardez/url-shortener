@@ -1,6 +1,7 @@
 package com.cbernardez.url.service;
 
 import com.cbernardez.url.dto.ShortenRequest;
+import com.cbernardez.url.exception.ShortUrlNotFoundException;
 import com.cbernardez.url.model.UrlEntry;
 import com.cbernardez.url.repository.UrlRepository;
 import org.springframework.stereotype.Service;
@@ -68,7 +69,7 @@ public class UrlService {
     public String getLongUrl(String shortUrl){
         //redirect to the original url
         UrlEntry entry = urlRepository.findByShortUrl(shortUrl)
-                .orElseThrow(() -> new RuntimeException("Short URL not found"));
+                .orElseThrow(() -> new ShortUrlNotFoundException());
         entry.incrementClickCount();
         this.urlRepository.save(entry);
         return entry.getLongUrl();
