@@ -52,6 +52,8 @@ public class UrlService {
         //redirect to the original url
         UrlEntry entry = urlRepository.findByShortUrl(shortUrl)
                 .orElseThrow(() -> new RuntimeException("Short URL not found"));
+        entry.incrementClickCount();
+        this.urlRepository.save(entry);
         return entry.getLongUrl();
     }
 }

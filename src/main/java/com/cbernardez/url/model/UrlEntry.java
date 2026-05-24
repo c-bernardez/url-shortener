@@ -12,6 +12,7 @@ public class UrlEntry {
     @Column(unique = true)
     private String shortUrl;
     private String longUrl;
+    private int clickCount;
 
     public UrlEntry() {}
 
@@ -28,6 +29,8 @@ public class UrlEntry {
         this.longUrl = longUrl;
     }
 
+    public void incrementClickCount() { this.clickCount++; }
+
     public long getId() {
         return id;
     }
@@ -39,4 +42,6 @@ public class UrlEntry {
     public String getLongUrl() {
         return longUrl;
     }
+
+    public int getClickCount() { return clickCount; }
 }
