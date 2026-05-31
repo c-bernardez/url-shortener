@@ -3,15 +3,22 @@ package com.cbernardez.url.service;
 import com.cbernardez.url.dto.ShortenRequest;
 import com.cbernardez.url.exception.AliasAlreadyTaken;
 import com.cbernardez.url.exception.ShortUrlNotFoundException;
+import com.cbernardez.url.exception.UrlExpiredException;
 import com.cbernardez.url.model.UrlEntry;
 import com.cbernardez.url.repository.UrlRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UrlService {
     private final UrlRepository urlRepository;
+    @Value("${url.expiration.minutes}")
+    private long expirationMinutes;
 
     public UrlService(UrlRepository urlRepository) {
         this.urlRepository = urlRepository;
@@ -40,9 +47,11 @@ public class UrlService {
         String longUrl = request.getUrl();
 
         //check if the url already exists
-        Optional<UrlEntry> existing = this.urlRepository.findByLongUrl(longUrl);
-        if (existing.isPresent()){
-            return existing.get().getShortUrl();
+        List<UrlEntry> entries = this.urlRepository.findByLongUrl(longUrl);
+        for (UrlEntry entry : entries){
+            if(Instant.now().isBefore(entry.getExpiresAt())){
+                return entry.getShortUrl();
+            }
         }
 
         //if url doesn't exist, check if custom alias is not null
@@ -56,6 +65,9 @@ public class UrlService {
         //create entry
         UrlEntry entry = new UrlEntry();
         entry.setLongUrl(longUrl);
+        Instant createdAt = Instant.now();
+        entry.setCreatedAt(createdAt);
+        entry.setExpiresAt(createdAt.plus(expirationMinutes, ChronoUnit.MINUTES));
         UrlEntry saved = this.urlRepository.save(entry);
         Long id = saved.getId();
 
@@ -69,9 +81,12 @@ public class UrlService {
     }
 
     public String getLongUrl(String shortUrl){
-        //redirect to the original url
         UrlEntry entry = urlRepository.findByShortUrl(shortUrl)
                 .orElseThrow(() -> new ShortUrlNotFoundException());
+
+        if(Instant.now().isAfter(entry.getExpiresAt())){
+            throw new UrlExpiredException();
+        }
         entry.incrementClickCount();
         this.urlRepository.save(entry);
         return entry.getLongUrl();

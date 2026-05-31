@@ -2,6 +2,8 @@ package com.cbernardez.url.model;
 
 import jakarta.persistence.*;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "urls")
 public class UrlEntry {
@@ -11,8 +13,12 @@ public class UrlEntry {
     private Long id;
     @Column(unique = true)
     private String shortUrl;
+    @Column(updatable = false)
     private String longUrl;
     private int clickCount;
+    @Column(updatable = false)
+    private Instant createdAt;
+    private Instant expiresAt;
 
     public UrlEntry() {}
 
@@ -31,6 +37,10 @@ public class UrlEntry {
 
     public void incrementClickCount() { this.clickCount++; }
 
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    public void setExpiresAt(Instant expiresAt) { this.expiresAt = expiresAt; }
+
     public long getId() {
         return id;
     }
@@ -44,4 +54,8 @@ public class UrlEntry {
     }
 
     public int getClickCount() { return clickCount; }
+
+    public Instant getCreatedAt() { return createdAt; }
+
+    public Instant getExpiresAt() { return expiresAt; }
 }
