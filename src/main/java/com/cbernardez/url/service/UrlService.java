@@ -1,6 +1,7 @@
 package com.cbernardez.url.service;
 
 import com.cbernardez.url.dto.ShortenRequest;
+import com.cbernardez.url.exception.AliasAlreadyTaken;
 import com.cbernardez.url.exception.ShortUrlNotFoundException;
 import com.cbernardez.url.model.UrlEntry;
 import com.cbernardez.url.repository.UrlRepository;
@@ -44,20 +45,21 @@ public class UrlService {
             return existing.get().getShortUrl();
         }
 
-        //create entry if not
+        //if url doesn't exist, check if custom alias is not null
+        String shortUrl = null;
+        if (request.getCustomAlias() != null) {
+            urlRepository.findByShortUrl(request.getCustomAlias())
+                    .ifPresent(e -> { throw new AliasAlreadyTaken(); });
+            shortUrl = request.getCustomAlias();
+        }
+
+        //create entry
         UrlEntry entry = new UrlEntry();
         entry.setLongUrl(longUrl);
         UrlEntry saved = this.urlRepository.save(entry);
         Long id = saved.getId();
 
-        //separate custom alias from request body, if it exists
-        String shortUrl;
-        if (request.getCustomAlias() != null) {
-            shortUrl = request.getCustomAlias();
-            urlRepository.findByShortUrl(request.getCustomAlias())
-                    .ifPresent(e -> { throw new RuntimeException("Alias already taken"); });
-        }
-        else{
+        if(shortUrl == null){
             shortUrl = toBase62(id);
         }
 
