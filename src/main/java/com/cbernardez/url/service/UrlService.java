@@ -1,18 +1,24 @@
 package com.cbernardez.url.service;
 
+import com.cbernardez.url.model.UrlEntry;
+import com.cbernardez.url.repository.UrlRepository;
+
 import com.cbernardez.url.dto.ShortenRequest;
+
 import com.cbernardez.url.exception.AliasAlreadyTaken;
 import com.cbernardez.url.exception.ShortUrlNotFoundException;
 import com.cbernardez.url.exception.UrlExpiredException;
-import com.cbernardez.url.model.UrlEntry;
-import com.cbernardez.url.repository.UrlRepository;
+import com.cbernardez.url.exception.InvalidUrlException;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
+
+import static com.cbernardez.url.validation.UrlCheck.isBlocked;
+import static com.cbernardez.url.validation.UrlCheck.isHttp;
 
 @Service
 public class UrlService {
@@ -45,6 +51,11 @@ public class UrlService {
     public String shortenUrl(ShortenRequest request) {
         //separate url from the request body
         String longUrl = request.getUrl();
+
+        //check the url is http(s) and isn't blacklisted
+        if (!isHttp(longUrl) || isBlocked(longUrl)) {
+            throw new InvalidUrlException();
+        }
 
         //check if the url already exists
         List<UrlEntry> entries = this.urlRepository.findByLongUrl(longUrl);
